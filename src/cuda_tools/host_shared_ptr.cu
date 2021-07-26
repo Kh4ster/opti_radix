@@ -3,22 +3,12 @@
 #include <cuda_runtime.h>
 
 #include "cuda_error_checking.cuh"
+#include "template_generator.hh"
 
 namespace cuda_tools
 {
 
-template class host_shared_ptr<short>;
-template class host_shared_ptr<int>;
-template class host_shared_ptr<long>;
-template class host_shared_ptr<long long>;
-
-template class host_shared_ptr<unsigned short>;
-template class host_shared_ptr<unsigned int>;
-template class host_shared_ptr<unsigned long>;
-template class host_shared_ptr<unsigned long long>;
-
-template class host_shared_ptr<float>;
-template class host_shared_ptr<double>;
+template_generation(host_shared_ptr);
 
 template <typename T>
 __host__
