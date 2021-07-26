@@ -33,3 +33,15 @@ set_property(TARGET Bench PROPERTY CXX_STANDARD 20)
 target_link_libraries(Bench async_memcpy GTest::GTest benchmark::benchmark TestHelpers)
 
 #add_test(NAME UTMaxtree COMMAND UTMaxtree)
+
+# BUILD_TYPE
+if (NOT CMAKE_BUILD_TYPE)
+    string(REGEX REPLACE ".*/build_" "" BUILD_NAME ${CMAKE_BINARY_DIR})
+    # Default BUILD_TYPE is Release
+    set(CMAKE_BUILD_TYPE Release)
+    # If folder is named "build_debug" BUILD_TYPE is set to: Debug
+    if(${BUILD_NAME} STREQUAL "Debug" OR ${BUILD_NAME} STREQUAL "debug")
+        set(CMAKE_BUILD_TYPE Debug)
+    endif()
+    message(STATUS "Build type : ${CMAKE_BUILD_TYPE}")
+endif()

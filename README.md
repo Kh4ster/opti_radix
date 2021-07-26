@@ -3,7 +3,6 @@ Benchmark template projet
 
 ## TODO
 
-- [] build_release/build_release should build in release
 - [] Use destructor in host_unique_ptr
 - [] Generic bench buffer type
 - [] Add check
