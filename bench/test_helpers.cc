@@ -1,4 +1,4 @@
-#include "test_helpers.cuh"
+#include "test_helpers.hh"
 
 #include "cuda_tools/host_unique_ptr.cuh"
 
