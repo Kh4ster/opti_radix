@@ -14,7 +14,7 @@ template <typename T>
 __host__
 void host_shared_ptr<T>::allocate(std::size_t size)
 {
-    cuda_safe_call(cudaMalloc(&data_, sizeof(T) * size));
+    cuda_safe_call(cudaMalloc((void**)&data_, sizeof(T) * size));
 }
 
 template <typename T>

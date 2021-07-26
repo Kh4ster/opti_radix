@@ -23,7 +23,7 @@ struct device_buffer
     __device__
     T& operator[](std::ptrdiff_t idx);
 
-    T* data_ = nullptr;
+    T* __restrict__ data_ = nullptr;
     std::size_t size_ = 0; 
 };
 
