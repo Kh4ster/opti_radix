@@ -1,5 +1,5 @@
 #include "test_helpers.hh"
-#include "cuda_tools/host_unique_ptr.cuh"
+#include "cuda_tools/host_shared_ptr.cuh"
 #include "to_bench.cuh"
 
 #include <benchmark/benchmark.h>
@@ -9,9 +9,9 @@ class Fixture : public benchmark::Fixture
 public:
     static bool no_check;
 
-    void bench(benchmark::State &st, std::function<void(cuda_tools::host_unique_ptr<int>)> callback, std::size_t size)
+    void bench(benchmark::State &st, std::function<void(cuda_tools::host_shared_ptr<int>)> callback, std::size_t size)
     {
-        cuda_tools::host_unique_ptr<int> buffer(size);
+        cuda_tools::host_shared_ptr<int> buffer(size);
 
         for (auto _ : st)
             callback(buffer);
@@ -20,8 +20,6 @@ public:
 
         if (!no_check)
             check_buffer(buffer);
-
-        buffer.free();
     }
 };
 

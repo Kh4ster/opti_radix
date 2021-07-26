@@ -17,8 +17,8 @@ set(CMAKE_CUDA_SEPARABLE_COMPILATION ON)
 
 add_library(async_memcpy
   src/to_bench.cu
-  src/cuda_tools/host_unique_ptr.cu
-  src/cuda_tools/device_unique_ptr.cu)
+  src/cuda_tools/host_shared_ptr.cu
+  src/cuda_tools/device_buffer.cu)
 
 include_directories(src)
 

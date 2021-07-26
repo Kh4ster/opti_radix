@@ -1,19 +1,17 @@
 #pragma once
 
-#include "host_unique_ptr.cuh"
+#include "host_shared_ptr.cuh"
 
 #include <device_launch_parameters.h>
 
 namespace cuda_tools
 {
 template <typename T>
-struct device_unique_ptr
+struct device_buffer
 {
-    explicit device_unique_ptr() = default;
-    explicit device_unique_ptr(host_unique_ptr<T> ptr);
-    
-    // No destructor free as it would cause desctruction in kernel
-    ~device_unique_ptr() = default;
+    explicit device_buffer() = default;
+    explicit device_buffer(host_shared_ptr<T>& ptr);
+    ~device_buffer() = default;
     
     __device__
     T* get() const noexcept;

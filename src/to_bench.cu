@@ -1,11 +1,11 @@
 #include "to_bench.cuh"
 
-#include "cuda_tools/host_unique_ptr.cuh"
-#include "cuda_tools/device_unique_ptr.cuh"
+#include "cuda_tools/host_shared_ptr.cuh"
+#include "cuda_tools/device_buffer.cuh"
 #include "cuda_tools/cuda_error_checking.cuh"
 
 __global__
-void kernel(cuda_tools::device_unique_ptr<int> buffer)
+void kernel(cuda_tools::device_buffer<int> buffer)
 {
     int index = threadIdx.x + blockIdx.x * blockDim.x;
     if (index < buffer.size_)
@@ -13,9 +13,9 @@ void kernel(cuda_tools::device_unique_ptr<int> buffer)
 }
 
 
-void to_bench(cuda_tools::host_unique_ptr<int> buffer)
+void to_bench(cuda_tools::host_shared_ptr<int> buffer)
 {
-    cuda_tools::device_unique_ptr<int> device_buffer(buffer);
+    cuda_tools::device_buffer<int> device_buffer(buffer);
 
     constexpr int TILE_WIDTH  = 64;
     constexpr int TILE_HEIGHT = 1;
