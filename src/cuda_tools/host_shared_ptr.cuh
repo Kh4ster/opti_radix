@@ -16,8 +16,10 @@ struct host_shared_ptr
     ~host_shared_ptr();
     
     void allocate(std::size_t size);
+    T* download();
 
     T* data_ = nullptr;
+    T* host_data_ = nullptr;
     std::size_t size_ = 0; 
     int counter_ = 1;
 };

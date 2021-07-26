@@ -54,7 +54,22 @@ template <typename T>
 host_shared_ptr<T>::~host_shared_ptr()
 {
     if (--counter_ == 0)
+    {
         cuda_safe_call(cudaFree(data_));
+        if (host_data_ != nullptr)
+            delete[] host_data_;
+    }
+}
+template <typename T>
+T* host_shared_ptr<T>::download()
+{
+    if (data_ != nullptr)
+    {
+        if (host_data_ == nullptr)
+            host_data_ = new T[size_];
+        cuda_safe_call(cudaMemcpy(host_data_, data_, sizeof(T) * size_, cudaMemcpyDeviceToHost));
+    }
+    return host_data_;
 }
 
 } // namespace cuda_tools
