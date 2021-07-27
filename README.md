@@ -54,7 +54,13 @@ conan install .. --build missing
 
 ## To bench your own code
 
-### Create a new cmake target
+### Compile your code
+There are two ways to get your code compiled:
+* Directly copy the function in the file `src/to_bench.cu`
+* Create a new cmake target
+
+
+#### Create a new cmake target
 
 In `CMakeLists.txt`:
 * Create a new library as follows:
