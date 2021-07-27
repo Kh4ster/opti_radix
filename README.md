@@ -86,7 +86,7 @@ In `bench/main.cc`:
 BENCHMARK_DEFINE_F(Fixture, BENCH_NAME)
 (benchmark::State &st)
 {
-    this->bench(st, NAME_OF_THE_FUNCTION_TO_BENCH, BUFFER_SIZE);
+    this->bench(st, NAME_OF_THE_FUNCTION_TO_BENCH, BUFFER_SIZE, FUNCTION_ARGS...);
 }
 ```
 * Register the new bench as follows
@@ -96,6 +96,7 @@ BENCHMARK_REGISTER_F(Fixture, BENCH_NAME)
     ->Unit(benchmark::kMillisecond);
 ```
 * Note: a template of this steps can directly be found in `src/main.cc`
+* Note: the first function argument must be a `cuda_tools::host_shared_ptr<int>`
 
 ### Extra ressources
 - You can use premade host_shared_ptr to allocate data
