@@ -10,7 +10,9 @@ The goal of this project is to be forked to serve as a base for anyone needing t
 * [CMake](https://cmake.org/download/)
 * [Conan](https://conan.io/center/)
 
-### Additional libraries included in the conan file
+### Additional libraries
+
+These libraries are included in the conan file. Do not install them yourself. Conan will do the job for you.
 
 * [GoogleTest](https://github.com/google/googletest)
 * [GoogleBenchmark](https://github.com/google/benchmark)
@@ -33,7 +35,7 @@ cd build
 ./bin/Bench
 ```
 
-- Additionnaly you can use "--build missing" to build missing libraries:
+- Additionnaly you can use `--build=missing` to build missing libraries:
 
 ```bash
 conan install .. --build missing
@@ -43,9 +45,9 @@ conan install .. --build missing
 
 ### Additional infos
 
-By default the program **will run in release** when it's inside a build / build_release folder. To build in debug, build the projet inside a build_debug folder.
+* By default the program **will run in release** when it's inside a `build` or `build_release` folder. To build in **debug**, build the projet inside a `build_debug` folder.
 
-You can specify the "--no-check" option when running the bench binary to disable result checking :
+* You can specify the "--no-check" option when running the bench binary to disable result checking :
 ```bash
 ./bin/Bench --no-check
 ```
