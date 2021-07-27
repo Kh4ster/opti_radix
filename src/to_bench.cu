@@ -11,7 +11,7 @@ __global__ void kernel(cuda_tools::device_buffer<int> buffer)
         buffer[index] = 0;
 }
 
-void to_bench(cuda_tools::host_shared_ptr<int> buffer)
+void to_bench_single(cuda_tools::host_shared_ptr<int> buffer)
 {
     cuda_tools::device_buffer<int> device_buffer(buffer);
 
@@ -30,7 +30,7 @@ void to_bench(cuda_tools::host_shared_ptr<int> buffer)
     cudaDeviceSynchronize();
 }
 
-void to_bench(cuda_tools::host_shared_ptr<int> buffer,
+void to_bench_multiple(cuda_tools::host_shared_ptr<int> buffer,
               int tile_width,
               int tile_height)
 {

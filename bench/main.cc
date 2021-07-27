@@ -9,16 +9,14 @@ class Fixture : public benchmark::Fixture
   public:
     static bool no_check;
 
-    template <typename... Args>
-    void bench(benchmark::State& st,
-               void (*callback)(cuda_tools::host_shared_ptr<int>, Args...),
-               std::size_t size,
-               Args... args)
+    template <typename FUNC, typename... Args>
+    void
+    bench(benchmark::State& st, FUNC callback, std::size_t size, Args&&... args)
     {
         cuda_tools::host_shared_ptr<int> buffer(size);
 
         for (auto _ : st)
-            callback(buffer, args...);
+            callback(buffer, std::forward<Args>(args)...);
 
         st.SetBytesProcessed(int64_t(st.iterations()) *
                              int64_t(size * sizeof(int)));
@@ -33,7 +31,7 @@ bool Fixture::no_check = false;
 // Basic bench
 // Remove me (it is simply a sample)
 BENCHMARK_DEFINE_F(Fixture, First_Bench)
-(benchmark::State& st) { this->bench(st, to_bench, 1 << 9); }
+(benchmark::State& st) { this->bench(st, to_bench_single, 1 << 9); }
 
 BENCHMARK_REGISTER_F(Fixture, First_Bench)
     ->UseRealTime()
@@ -42,7 +40,7 @@ BENCHMARK_REGISTER_F(Fixture, First_Bench)
 // Bench a function with multiple arguments
 // Remove me (it is simply a sample)
 BENCHMARK_DEFINE_F(Fixture, Bench_Multiple_Args)
-(benchmark::State& st) { this->bench(st, to_bench, 1 << 9, 64, 1); }
+(benchmark::State& st) { this->bench(st, to_bench_multiple, 1 << 9, 64, 1); }
 
 BENCHMARK_REGISTER_F(Fixture, Bench_Multiple_Args)
     ->UseRealTime()
