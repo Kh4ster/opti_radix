@@ -52,7 +52,43 @@ You can specify the "--no-check" option when running the bench binary to disable
 
 ## To bench your own code
 
-- Place the functions you need to bench inside "src/to_bench.cu"
-- Add them in "bench/main.cc" to enable benching
+### Create a new cmake target
+
+In `CMakeLists.txt`:
+* Create a new library as follows:
+```cmake
+add_library(LIB_NAME
+	SOURCE_FILE1
+	SOURCE_FILE2
+	...
+)
+```
+* Link this library to the `Bench` target (add this library among the others) as follows:
+```cmake
+target_link_libraries(Bench LIB_NAME async_memcpy GTest::GTest benchmark::benchmark TestHelpers)
+```
+* Note: be careful not to have the same functions name for exported functions between libraries (avoid multiple definition compilation error)
+
+### Create new benches
+
+In `bench/main.cc`:
+* Include the header file containing the function(s) to bench `#include header_file.cuh` if not already in the included files
+* Define a new bench as follows
+```c++
+BENCHMARK_DEFINE_F(Fixture, BENCH_NAME)
+(benchmark::State &st)
+{
+    this->bench(st, NAME_OF_THE_FUNCTION_TO_BENCH, BUFFER_SIZE);
+}
+```
+* Register the new bench as follows
+```c++
+BENCHMARK_REGISTER_F(Fixture, BENCH_NAME)
+    ->UseRealTime()
+    ->Unit(benchmark::kMillisecond);
+```
+* Note: a template of this steps can directly be found in `src/main.cc`
+
+### Extra ressources
 - You can use premade host_shared_ptr to allocate data
 - You can use premade test_helper to test your result
