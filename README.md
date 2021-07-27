@@ -98,6 +98,7 @@ BENCHMARK_REGISTER_F(Fixture, BENCH_NAME)
 * Note: a template of this steps can directly be found in `src/main.cc`
 * Note: the first function argument must be a `cuda_tools::host_shared_ptr<int>`
 
+
 ### Extra ressources
 - You can use premade host_shared_ptr to allocate data
 - You can use premade test_helper to test your result
