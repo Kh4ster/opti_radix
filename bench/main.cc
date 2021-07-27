@@ -1,22 +1,25 @@
-#include "test_helpers.hh"
 #include "cuda_tools/host_shared_ptr.cuh"
+#include "test_helpers.hh"
 #include "to_bench.cuh"
 
 #include <benchmark/benchmark.h>
 
 class Fixture : public benchmark::Fixture
 {
-public:
+  public:
     static bool no_check;
 
-    void bench(benchmark::State &st, std::function<void(cuda_tools::host_shared_ptr<int>)> callback, std::size_t size)
+    template <typename FUNC, typename... Args>
+    void
+    bench(benchmark::State& st, FUNC callback, std::size_t size, Args&&... args)
     {
         cuda_tools::host_shared_ptr<int> buffer(size);
 
         for (auto _ : st)
-            callback(buffer);
+            callback(buffer, std::forward<Args>(args)...);
 
-        st.SetBytesProcessed(int64_t(st.iterations()) * int64_t(size * sizeof(int)));
+        st.SetBytesProcessed(int64_t(st.iterations()) *
+                             int64_t(size * sizeof(int)));
 
         if (!no_check)
             check_buffer(buffer);
@@ -25,15 +28,25 @@ public:
 
 bool Fixture::no_check = false;
 
+// Basic bench
+// Remove me (it is simply a sample)
 BENCHMARK_DEFINE_F(Fixture, First_Bench)
-(benchmark::State &st)
-{
-    this->bench(st, to_bench, 1 << 9);
-}
+(benchmark::State& st) { this->bench(st, to_bench_single, 1 << 9); }
 
-BENCHMARK_REGISTER_F(Fixture, First_Bench)->UseRealTime()->Unit(benchmark::kMillisecond);
+BENCHMARK_REGISTER_F(Fixture, First_Bench)
+    ->UseRealTime()
+    ->Unit(benchmark::kMillisecond);
 
-int main(int argc, char **argv)
+// Bench a function with multiple arguments
+// Remove me (it is simply a sample)
+BENCHMARK_DEFINE_F(Fixture, Bench_Multiple_Args)
+(benchmark::State& st) { this->bench(st, to_bench_multiple, 1 << 9, 64, 1); }
+
+BENCHMARK_REGISTER_F(Fixture, Bench_Multiple_Args)
+    ->UseRealTime()
+    ->Unit(benchmark::kMillisecond);
+
+int main(int argc, char** argv)
 {
     ::benchmark::Initialize(&argc, argv);
 
