@@ -30,10 +30,21 @@ class Fixture : public benchmark::Fixture
 
 bool Fixture::no_check = false;
 
+// Basic bench
+// Remove me (it is simply a sample)
 BENCHMARK_DEFINE_F(Fixture, First_Bench)
 (benchmark::State& st) { this->bench(st, to_bench, 1 << 9); }
 
 BENCHMARK_REGISTER_F(Fixture, First_Bench)
+    ->UseRealTime()
+    ->Unit(benchmark::kMillisecond);
+
+// Bench a function with multiple arguments
+// Remove me (it is simply a sample)
+BENCHMARK_DEFINE_F(Fixture, Bench_Multiple_Args)
+(benchmark::State& st) { this->bench(st, to_bench, 1 << 9, 64, 1); }
+
+BENCHMARK_REGISTER_F(Fixture, Bench_Multiple_Args)
     ->UseRealTime()
     ->Unit(benchmark::kMillisecond);
 
