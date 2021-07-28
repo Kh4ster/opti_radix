@@ -31,7 +31,10 @@ bool Fixture::no_check = false;
 // Basic bench
 // Remove me (it is simply a sample)
 BENCHMARK_DEFINE_F(Fixture, First_Bench)
-(benchmark::State& st) { this->bench(st, to_bench_single, 1 << 9); }
+(benchmark::State& st)
+{
+    this->bench(st, to_bench_single, std::size_t(1) << 25);
+}
 
 BENCHMARK_REGISTER_F(Fixture, First_Bench)
     ->UseRealTime()
@@ -40,7 +43,10 @@ BENCHMARK_REGISTER_F(Fixture, First_Bench)
 // Bench a function with multiple arguments
 // Remove me (it is simply a sample)
 BENCHMARK_DEFINE_F(Fixture, Bench_Multiple_Args)
-(benchmark::State& st) { this->bench(st, to_bench_multiple, 1 << 9, 64, 1); }
+(benchmark::State& st)
+{
+    this->bench(st, to_bench_multiple, std::size_t(1) << 25, 64, 1);
+}
 
 BENCHMARK_REGISTER_F(Fixture, Bench_Multiple_Args)
     ->UseRealTime()
