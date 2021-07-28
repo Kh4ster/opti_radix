@@ -11,7 +11,7 @@ void kernel(cuda_tools::device_buffer<int> buffer)
 {
     int index = threadIdx.x + blockIdx.x * blockDim.x;
     if (index < buffer.size_)
-        buffer[index] = 0;
+        buffer[index] = buffer[index] + 1;
 }
 
 void to_bench_single(cuda_tools::host_shared_ptr<int> buffer)

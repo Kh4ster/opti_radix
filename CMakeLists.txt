@@ -13,6 +13,7 @@ set(CMAKE_CUDA_STANDARD 17)
 set(CMAKE_CUDA_STANDARD_REQUIRED TRUE)
 set(CMAKE_CUDA_ARCHITECTURES 75)
 set(CMAKE_CUDA_SEPARABLE_COMPILATION ON)
+set(CMAKE_CUDA_FLAGS "--extended-lambda")
 #set(CMAKE_CUDA_FLAGS "--expt-relaxed-constexpr --ptxas-options=-v --generate-line-info")
 
 add_library(async_memcpy
@@ -26,8 +27,9 @@ find_package(GTest 1.10 REQUIRED)
 find_package(benchmark REQUIRED)
 
 add_library(TestHelpers OBJECT bench/test_helpers.cc)
-
 add_executable(Bench bench/main.cc)
+
+set_property(TARGET TestHelpers PROPERTY CXX_STANDARD 20)
 set_property(TARGET Bench PROPERTY CXX_STANDARD 20)
 
 target_link_libraries(Bench async_memcpy GTest::GTest benchmark::benchmark TestHelpers)

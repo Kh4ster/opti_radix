@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <functional>
 
 namespace cuda_tools
 {
@@ -16,6 +17,7 @@ struct host_shared_ptr
     ~host_shared_ptr();
     
     void allocate(std::size_t size);
+    void fill(const T val);
     T* download();
 
     T* __restrict__ data_ = nullptr;

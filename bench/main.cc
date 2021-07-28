@@ -13,16 +13,20 @@ class Fixture : public benchmark::Fixture
     void
     bench(benchmark::State& st, FUNC callback, std::size_t size, Args&&... args)
     {
+        constexpr int val = 5;
         cuda_tools::host_shared_ptr<int> buffer(size);
 
         for (auto _ : st)
+        {
+            buffer.fill(val);
             callback(buffer, std::forward<Args>(args)...);
+        }
 
         st.SetBytesProcessed(int64_t(st.iterations()) *
                              int64_t(size * sizeof(int)));
 
         if (!no_check)
-            check_buffer(buffer);
+            check_buffer(buffer, val);
     }
 };
 
