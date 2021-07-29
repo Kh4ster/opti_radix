@@ -25,8 +25,9 @@ class Fixture : public benchmark::Fixture
         st.SetBytesProcessed(int64_t(st.iterations()) *
                              int64_t(size * sizeof(int)));
 
+        auto lambda = [val](int i) { return i == val + 1; };
         if (!no_check)
-            check_buffer(buffer, val);
+            check_buffer(buffer, lambda);
     }
 };
 

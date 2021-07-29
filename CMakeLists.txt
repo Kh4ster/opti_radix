@@ -26,13 +26,10 @@ include_directories(src)
 find_package(GTest 1.10 REQUIRED)
 find_package(benchmark REQUIRED)
 
-add_library(TestHelpers OBJECT bench/test_helpers.cc)
 add_executable(Bench bench/main.cc)
-
-set_property(TARGET TestHelpers PROPERTY CXX_STANDARD 20)
 set_property(TARGET Bench PROPERTY CXX_STANDARD 20)
 
-target_link_libraries(Bench async_memcpy GTest::GTest benchmark::benchmark TestHelpers)
+target_link_libraries(Bench async_memcpy GTest::GTest benchmark::benchmark)
 
 #add_test(NAME UTMaxtree COMMAND UTMaxtree)
 

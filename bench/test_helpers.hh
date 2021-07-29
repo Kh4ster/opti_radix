@@ -2,4 +2,7 @@
 
 #include "cuda_tools/host_shared_ptr.cuh"
 
-void check_buffer(cuda_tools::host_shared_ptr<int> buffer, const int val);
+template <typename FUNC>
+void check_buffer(cuda_tools::host_shared_ptr<int> buffer, FUNC func);
+
+#include "test_helpers.hxx"
