@@ -16,28 +16,28 @@ device_buffer<T>::device_buffer(host_shared_ptr<T>& ptr) : data_(ptr.data_), siz
 
 template <typename T>
 __device__
-T* device_buffer<T>::get() const noexcept
+inline T* device_buffer<T>::get() const noexcept
 {
     return data_;
 }
 
 template <typename T>
 __device__
-T* device_buffer<T>::get() noexcept
+inline T* device_buffer<T>::get() noexcept
 {
     return data_;
 }
 
 template <typename T>
 __device__
-T& device_buffer<T>::operator[](std::ptrdiff_t idx) const
+inline T& device_buffer<T>::operator[](std::ptrdiff_t idx) const
 {
     return get()[idx];
 }
 
 template <typename T>
 __device__
-T& device_buffer<T>::operator[](std::ptrdiff_t idx)
+inline T& device_buffer<T>::operator[](std::ptrdiff_t idx)
 {
     return get()[idx];
 }

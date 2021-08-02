@@ -3,6 +3,8 @@
 
 #include <cuda_runtime.h>
 #include <cstdio>
+#include <algorithm>
+#include <execution>
 
 #include "cuda_error_checking.cuh"
 #include "template_generator.hh"
@@ -13,8 +15,7 @@ namespace cuda_tools
 template_generation(host_shared_ptr);
 
 template <typename T>
-__host__
-void host_shared_ptr<T>::allocate(std::size_t size)
+void host_shared_ptr<T>::device_allocate(std::size_t size)
 {
     cuda_safe_call(cudaMalloc((void**)&data_, sizeof(T) * size));
 }
@@ -22,7 +23,7 @@ void host_shared_ptr<T>::allocate(std::size_t size)
 template <typename T>
 host_shared_ptr<T>::host_shared_ptr(std::size_t size) : size_(size)
 {
-    allocate(size);
+    device_allocate(size);
 }
 
 template <typename T>
@@ -54,6 +55,18 @@ host_shared_ptr<T>::~host_shared_ptr()
 }
 
 template <typename T>
+inline T& host_shared_ptr<T>::operator[](std::ptrdiff_t idx) const noexcept
+{
+    return host_data_[idx];
+}
+
+template <typename T>
+inline T& host_shared_ptr<T>::operator[](std::ptrdiff_t idx) noexcept
+{
+    return host_data_[idx];
+}
+
+template <typename T>
 T* host_shared_ptr<T>::download()
 {
     if (data_ != nullptr)
@@ -75,7 +88,7 @@ static void kernel_fill(cuda_tools::device_buffer<T> buffer, FUNC func)
 }
 
 template <typename T>
-void host_shared_ptr<T>::fill(const T val)
+void host_shared_ptr<T>::device_fill(const T val)
 {
     constexpr int TILE_WIDTH  = 64;
     constexpr int TILE_HEIGHT = 1;
@@ -96,5 +109,27 @@ void host_shared_ptr<T>::fill(const T val)
     cudaDeviceSynchronize();
 }
 
+template <typename T>
+void host_shared_ptr<T>::host_allocate()
+{
+    host_data_ = new T[size_];
+}
+
+template <typename T>
+void host_shared_ptr<T>::host_allocate(std::size_t size)
+{
+    host_data_ = new T[size];
+    size_ = size;
+}
+
+template <typename T>
+void host_shared_ptr<T>::host_fill(const T val)
+{
+    std::transform(std::execution::par_unseq,
+                   host_data_,
+                   host_data_ + size_,
+                   host_data_,
+                   [val]([[maybe_unused]]T arg){return val;});
+}
 
 } // namespace cuda_tools

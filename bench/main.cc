@@ -15,10 +15,12 @@ class Fixture : public benchmark::Fixture
     {
         constexpr int val = 5;
         cuda_tools::host_shared_ptr<int> buffer(size);
+        buffer.host_allocate();
+        buffer.host_fill(val);
 
         for (auto _ : st)
         {
-            buffer.fill(val);
+            buffer.device_fill(val);
             callback(buffer, std::forward<Args>(args)...);
         }
 
