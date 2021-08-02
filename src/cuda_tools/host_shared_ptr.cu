@@ -112,7 +112,7 @@ void host_shared_ptr<T>::device_fill(const T val)
 template <typename T>
 void host_shared_ptr<T>::host_allocate()
 {
-    host_data_ = new T[size_];
+    host_allocate(size_);
 }
 
 template <typename T>
