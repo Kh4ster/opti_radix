@@ -69,13 +69,14 @@ inline T& host_shared_ptr<T>::operator[](std::ptrdiff_t idx) noexcept
 template <typename T>
 T* host_shared_ptr<T>::download()
 {
-    if (data_ != nullptr)
-    {
-        if (host_data_ == nullptr)
-            host_data_ = new T[size_];
-        cuda_safe_call(cudaMemcpy(host_data_, data_, sizeof(T) * size_, cudaMemcpyDeviceToHost));
-    }
+    cuda_safe_call(cudaMemcpy(host_data_, data_, sizeof(T) * size_, cudaMemcpyDeviceToHost));
     return host_data_;
+}
+
+template <typename T>
+void host_shared_ptr<T>::upload()
+{
+    cuda_safe_call(cudaMemcpy(data_, host_data_, sizeof(T) * size_, cudaMemcpyHostToDevice));
 }
 
 template <typename T, typename FUNC>
