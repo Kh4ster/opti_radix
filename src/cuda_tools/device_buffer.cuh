@@ -24,7 +24,7 @@ struct device_buffer
     T& operator[](std::ptrdiff_t idx);
 
     T* __restrict__ data_ = nullptr;
-    std::size_t size_ = 0; 
+    int size_ = 0; 
 };
 
 } // namespace cuda_tools

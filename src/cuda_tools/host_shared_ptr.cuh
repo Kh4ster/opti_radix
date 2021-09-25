@@ -30,7 +30,7 @@ struct host_shared_ptr
   
     T* __restrict__ data_ = nullptr;
     T* __restrict__ host_data_ = nullptr;
-    std::size_t size_ = 0; 
+    int size_ = 0; 
     int counter_ = 1;
 };
 
