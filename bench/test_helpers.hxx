@@ -35,5 +35,6 @@ void check_buffer(cuda_tools::host_shared_ptr<int> buffer,
                                              expected.host_data_);
         std::cout << "Error at " << first - host_buffer << ": " << *first << " "
                   << *second << std::endl;
+        ASSERT_FALSE(true);
     }
 }
