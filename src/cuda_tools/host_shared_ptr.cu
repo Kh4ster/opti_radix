@@ -128,6 +128,9 @@ void host_shared_ptr<T>::host_allocate(std::size_t size)
 template <typename T>
 void host_shared_ptr<T>::host_fill(const T val)
 {
+    if (host_data_ == nullptr)
+        host_allocate();
+
     std::transform(std::execution::par_unseq,
                    host_data_,
                    host_data_ + size_,
