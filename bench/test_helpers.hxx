@@ -20,3 +20,20 @@ void check_buffer(cuda_tools::host_shared_ptr<int> buffer, FUNC func)
         ASSERT_TRUE(false);
     }
 }
+
+void check_buffer(cuda_tools::host_shared_ptr<int> buffer,
+                  cuda_tools::host_shared_ptr<int> expected)
+{
+    int* host_buffer = buffer.download();
+
+    if (!std::equal(host_buffer,
+                    host_buffer + buffer.size_,
+                    expected.host_data_))
+    {
+        auto [first, second] = std::mismatch(host_buffer,
+                                             host_buffer + buffer.size_,
+                                             expected.host_data_);
+        std::cout << "Error at " << first - host_buffer << ": " << *first << " "
+                  << *second << std::endl;
+    }
+}
