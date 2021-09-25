@@ -27,11 +27,11 @@ host_shared_ptr<T>::host_shared_ptr(std::size_t size) : size_(size)
 }
 
 template <typename T>
-host_shared_ptr<T>::host_shared_ptr(host_shared_ptr<T>&& ptr) : data_(ptr.data_), size_(ptr.size_), counter_(ptr.counter_ + 1)
+host_shared_ptr<T>::host_shared_ptr(host_shared_ptr<T>&& ptr) : data_(ptr.data_), host_data_(ptr.host_data_), size_(ptr.size_), counter_(ptr.counter_ + 1)
 {}
 
 template <typename T>
-host_shared_ptr<T>::host_shared_ptr(host_shared_ptr<T>& ptr) : data_(ptr.data_), size_(ptr.size_), counter_(ptr.counter_ + 1)
+host_shared_ptr<T>::host_shared_ptr(host_shared_ptr<T>& ptr) : data_(ptr.data_), host_data_(ptr.host_data_), size_(ptr.size_), counter_(ptr.counter_ + 1)
 {}
 
 template <typename T>
@@ -69,6 +69,8 @@ inline T& host_shared_ptr<T>::operator[](std::ptrdiff_t idx) noexcept
 template <typename T>
 T* host_shared_ptr<T>::download()
 {
+    if (host_data_ == nullptr)
+        host_allocate();
     cuda_safe_call(cudaMemcpy(host_data_, data_, sizeof(T) * size_, cudaMemcpyDeviceToHost));
     return host_data_;
 }
