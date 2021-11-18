@@ -1,9 +1,9 @@
-#include "host_shared_ptr.cuh"
 #include "cuda_tools/device_buffer.cuh"
+#include "host_shared_ptr.cuh"
 
-#include <cuda_runtime.h>
-#include <cstdio>
 #include <algorithm>
+#include <cstdio>
+#include <cuda_runtime.h>
 #include <execution>
 
 #include "cuda_error_checking.cuh"
@@ -21,18 +21,29 @@ void host_shared_ptr<T>::device_allocate(std::size_t size)
 }
 
 template <typename T>
-host_shared_ptr<T>::host_shared_ptr(std::size_t size) : size_(size)
+host_shared_ptr<T>::host_shared_ptr(std::size_t size)
+    : size_(size)
 {
     device_allocate(size);
 }
 
 template <typename T>
-host_shared_ptr<T>::host_shared_ptr(host_shared_ptr<T>&& ptr) : data_(ptr.data_), host_data_(ptr.host_data_), size_(ptr.size_), counter_(ptr.counter_ + 1)
-{}
+host_shared_ptr<T>::host_shared_ptr(host_shared_ptr<T>&& ptr)
+    : data_(ptr.data_)
+    , host_data_(ptr.host_data_)
+    , size_(ptr.size_)
+    , counter_(ptr.counter_ + 1)
+{
+}
 
 template <typename T>
-host_shared_ptr<T>::host_shared_ptr(host_shared_ptr<T>& ptr) : data_(ptr.data_), host_data_(ptr.host_data_), size_(ptr.size_), counter_(ptr.counter_ + 1)
-{}
+host_shared_ptr<T>::host_shared_ptr(host_shared_ptr<T>& ptr)
+    : data_(ptr.data_)
+    , host_data_(ptr.host_data_)
+    , size_(ptr.size_)
+    , counter_(ptr.counter_ + 1)
+{
+}
 
 template <typename T>
 host_shared_ptr<T>& host_shared_ptr<T>::operator=(host_shared_ptr<T>&& r)
@@ -71,19 +82,25 @@ T* host_shared_ptr<T>::download()
 {
     if (host_data_ == nullptr)
         host_allocate();
-    cuda_safe_call(cudaMemcpy(host_data_, data_, sizeof(T) * size_, cudaMemcpyDeviceToHost));
+    cuda_safe_call(cudaMemcpy(host_data_,
+                              data_,
+                              sizeof(T) * size_,
+                              cudaMemcpyDeviceToHost));
     return host_data_;
 }
 
 template <typename T>
 void host_shared_ptr<T>::upload()
 {
-    cuda_safe_call(cudaMemcpy(data_, host_data_, sizeof(T) * size_, cudaMemcpyHostToDevice));
+    cuda_safe_call(cudaMemcpy(data_,
+                              host_data_,
+                              sizeof(T) * size_,
+                              cudaMemcpyHostToDevice));
 }
 
 template <typename T, typename FUNC>
-__global__
-static void kernel_fill(cuda_tools::device_buffer<T> buffer, FUNC func)
+__global__ static void kernel_fill(cuda_tools::device_buffer<T> buffer,
+                                   FUNC func)
 {
     const int index = threadIdx.x + blockIdx.x * blockDim.x;
     if (index < buffer.size_)
@@ -93,7 +110,7 @@ static void kernel_fill(cuda_tools::device_buffer<T> buffer, FUNC func)
 template <typename T>
 void host_shared_ptr<T>::device_fill(const T val)
 {
-    constexpr int TILE_WIDTH  = 64;
+    constexpr int TILE_WIDTH = 64;
     constexpr int TILE_HEIGHT = 1;
 
     cuda_tools::device_buffer<T> device_buffer(*this);
@@ -128,6 +145,18 @@ void host_shared_ptr<T>::host_allocate(std::size_t size)
 template <typename T>
 void host_shared_ptr<T>::host_fill(const T val)
 {
+    host_map([val]([[maybe_unused]] T arg) { return val; });
+}
+
+template <typename T>
+void host_shared_ptr<T>::host_fill(std::function<T()> func)
+{
+    host_map([func]([[maybe_unused]] T arg) { return func(); });
+}
+
+template <typename T>
+void host_shared_ptr<T>::host_map(std::function<T(T arg)> func)
+{
     if (host_data_ == nullptr)
         host_allocate();
 
@@ -135,7 +164,7 @@ void host_shared_ptr<T>::host_fill(const T val)
                    host_data_,
                    host_data_ + size_,
                    host_data_,
-                   [val]([[maybe_unused]]T arg){return val;});
+                   func);
 }
 
 } // namespace cuda_tools
