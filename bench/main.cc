@@ -29,7 +29,7 @@ class Fixture : public benchmark::Fixture
 
         auto lambda = [val](int i) { return i == val + 1; };
         if (!no_check)
-            check_buffer(buffer, lambda);
+            check_buffer(buffer, lambda, st);
     }
 };
 
