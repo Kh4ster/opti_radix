@@ -167,4 +167,24 @@ void host_shared_ptr<T>::host_map(std::function<T(T arg)> func)
                    func);
 }
 
+template <typename T>
+host_shared_ptr<T> host_shared_ptr<T>::copy()
+{
+    host_shared_ptr<T> cp(this->size_);
+    cuda_safe_call(cudaMemcpy(cp.data_,
+                              this->data_,
+                              sizeof(T) * this->size_,
+                              cudaMemcpyDeviceToDevice));
+    if (this->host_data_ != nullptr)
+    {
+        cp.host_allocate();
+        std::copy(std::execution::par_unseq,
+                  this->host_data_,
+                  this->host_data_ + this->size_,
+                  cp.host_data_);
+    }
+
+    return cp;
+}
+
 } // namespace cuda_tools

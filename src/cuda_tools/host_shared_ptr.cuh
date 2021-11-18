@@ -8,6 +8,8 @@ namespace cuda_tools
 template <typename T>
 struct host_shared_ptr
 {
+    // TODO move to shared_ptr with class passing using correct constructor
+
     host_shared_ptr() = default;
     host_shared_ptr(std::size_t size);
     host_shared_ptr(host_shared_ptr<T>&& ptr);
@@ -31,6 +33,8 @@ struct host_shared_ptr
     T* download();
     // Transfer host data to device data
     void upload();
+    // Create a new pointer with a copy of the underlying data & counter = 1
+    host_shared_ptr copy();
 
     T* __restrict__ data_ = nullptr;
     T* __restrict__ host_data_ = nullptr;
