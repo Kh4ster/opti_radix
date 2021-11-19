@@ -7,7 +7,7 @@
 #include <execution>
 #include <gtest/gtest.h>
 
-template <typename FUNC>
+template <typename T, typename FUNC>
 void check_buffer(cuda_tools::host_shared_ptr<int> buffer,
                   FUNC func,
                   benchmark::State& st)
@@ -25,11 +25,12 @@ void check_buffer(cuda_tools::host_shared_ptr<int> buffer,
     }
 }
 
-void check_buffer(cuda_tools::host_shared_ptr<int> buffer,
-                  cuda_tools::host_shared_ptr<int> expected,
+template <typename T>
+void check_buffer(cuda_tools::host_shared_ptr<T> buffer,
+                  cuda_tools::host_shared_ptr<T> expected,
                   benchmark::State& st)
 {
-    int* host_buffer = buffer.download();
+    T* host_buffer = buffer.download();
 
     if (!std::equal(std::execution::par_unseq,
                     host_buffer,

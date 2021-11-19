@@ -1,0 +1,125 @@
+#include "to_bench.cuh"
+
+#include "cuda_tools/cuda_error_checking.cuh"
+#include "cuda_tools/device_buffer.cuh"
+#include "cuda_tools/host_shared_ptr.cuh"
+
+#include <cuda_profiler_api.h>
+
+#include <cub/cub.cuh>
+
+// TILE_WIDTH == BLOCK_WIDTH == 256
+// BITS_PER_PASS = 256
+// 1 thread per element
+// Boundary not handled
+template <typename T, int TILE_WIDTH, int TILE_HEIGHT>
+__global__ void block_histo_basic(cuda_tools::device_buffer<T> in,
+                                  cuda_tools::device_buffer<T> out,
+                                  cuda_tools::device_buffer<int> digit_count)
+{
+    const int tid = threadIdx.x;
+    const int gid = tid + blockIdx.x * blockDim.x;
+
+    typedef cub::BlockHistogram<T, TILE_WIDTH, 1, 256> BlockHistogram;
+    // Allocate shared memory for BlockHistogram
+    __shared__ typename BlockHistogram::TempStorage temp_storage;
+    // Allocate shared memory for block-wide histogram bin counts
+    __shared__ unsigned int smem_histogram[256];
+    // Obtain input samples per thread
+    T hist[1] = {in[gid]};
+    // Compute the block-wide histogram
+    BlockHistogram(temp_storage).Histogram(hist, smem_histogram);
+
+    // printf("T %d data %d hist %d\n", tid, in[gid], smem_histogram[tid]);
+    digit_count[blockIdx.x + tid * gridDim.x] = smem_histogram[tid];
+}
+
+// TILE_WIDTH == BLOCK_WIDTH == 256
+// BITS_PER_PASS = 256
+// 1 thread per element
+// Boundary not handled
+template <typename T, int TILE_WIDTH, int TILE_HEIGHT>
+__global__ void scatter_result_basic(cuda_tools::device_buffer<T> in,
+                                     cuda_tools::device_buffer<T> out,
+                                     cuda_tools::device_buffer<int> digit_count)
+{
+    const int tid = threadIdx.x;
+    const int gid = tid + blockIdx.x * blockDim.x;
+
+    typedef cub::BlockScan<int, TILE_WIDTH> BlockScan;
+    __shared__ typename BlockScan::TempStorage temp_storage;
+    __shared__ int local_prefix_sum[1 << (sizeof(T) * 8)];
+    const T thread_data = in[gid];
+
+    for (int i = 0; i < 1 << (sizeof(T) * 8); ++i)
+    {
+        const int is_same = static_cast<int>(thread_data == i);
+        int out = is_same;
+        BlockScan(temp_storage).ExclusiveSum(is_same, out);
+        if (is_same > 0)
+            local_prefix_sum[tid] = out;
+        __syncthreads(); // For temp_storage reuse
+    }
+
+    const int new_pos = digit_count[blockIdx.x + gridDim.x * thread_data] +
+                        local_prefix_sum[tid];
+    out[new_pos] = thread_data;
+}
+
+// TODO handle none TILE_SIZE % SIZE == 0
+template <typename T, int TILE_WIDTH, int TILE_HEIGHT, int BITS_PER_PASS>
+void radix_sort_basic(cuda_tools::host_shared_ptr<T> in,
+                      cuda_tools::host_shared_ptr<T> out,
+                      Chrono* chrono)
+{
+
+    const int gx = (in.size_ + TILE_WIDTH - 1) / TILE_WIDTH;
+    const int gy = 1;
+
+    const dim3 block(TILE_WIDTH, TILE_HEIGHT);
+    const dim3 grid(gx, gy);
+
+    cuda_tools::host_shared_ptr<int> digit_count(gx * (1 << sizeof(T) * 8));
+    cuda_tools::host_shared_ptr<int> scan_out(gx * (1 << sizeof(T) * 8));
+
+    void* d_temp_storage = NULL;
+    size_t temp_storage_bytes = 0;
+    // Allocate temporary storage
+    cub::DeviceScan::ExclusiveSum(d_temp_storage,
+                                  temp_storage_bytes,
+                                  digit_count.data_,
+                                  scan_out.data_,
+                                  digit_count.size_);
+    cudaMalloc(&d_temp_storage, temp_storage_bytes);
+
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+
+    cudaProfilerStart();
+
+    block_histo_basic<T, TILE_WIDTH, TILE_HEIGHT>
+        <<<grid, block>>>(in.to_device(),
+                          out.to_device(),
+                          digit_count.to_device());
+
+    // Run exclusive prefix sum
+    cub::DeviceScan::ExclusiveSum(d_temp_storage,
+                                  temp_storage_bytes,
+                                  digit_count.data_,
+                                  scan_out.data_,
+                                  digit_count.size_);
+
+    scatter_result_basic<T, TILE_WIDTH, TILE_HEIGHT>
+        <<<grid, block>>>(in.to_device(),
+                          out.to_device(),
+                          scan_out.to_device());
+
+    kernel_check_error();
+    cudaDeviceSynchronize();
+    cudaEventRecord(stop);
+    cudaProfilerStop();
+    float duration_ms = 0;
+    cudaEventElapsedTime(&duration_ms, start, stop);
+    chrono->SetIterationTime(duration_ms / 1000.);
+}

@@ -17,7 +17,6 @@ set(CMAKE_CUDA_FLAGS "--extended-lambda")
 #set(CMAKE_CUDA_FLAGS "--expt-relaxed-constexpr --ptxas-options=-v --generate-line-info")
 
 add_library(async_memcpy
-  src/to_bench.cu
   src/cuda_tools/host_shared_ptr.cu
   src/cuda_tools/device_buffer.cu)
 
@@ -26,7 +25,7 @@ include_directories(src)
 find_package(GTest 1.10 REQUIRED)
 find_package(benchmark REQUIRED)
 
-add_executable(Bench bench/main.cc)
+add_executable(Bench bench/main.cu)
 set_property(TARGET Bench PROPERTY CXX_STANDARD 20)
 
 target_link_libraries(Bench async_memcpy GTest::GTest benchmark::benchmark)
