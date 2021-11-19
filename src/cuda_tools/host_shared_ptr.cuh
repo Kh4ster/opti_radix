@@ -5,6 +5,9 @@
 
 namespace cuda_tools
 {
+
+template <typename T>
+struct device_buffer;
 template <typename T>
 struct host_shared_ptr
 {
@@ -35,6 +38,8 @@ struct host_shared_ptr
     void upload();
     // Create a new pointer with a copy of the underlying data & counter = 1
     host_shared_ptr copy();
+    // Create a device object containing the same data
+    device_buffer<T> to_device();
 
     T* __restrict__ data_ = nullptr;
     T* __restrict__ host_data_ = nullptr;

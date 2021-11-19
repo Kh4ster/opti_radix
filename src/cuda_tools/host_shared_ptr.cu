@@ -7,6 +7,7 @@
 #include <execution>
 
 #include "cuda_error_checking.cuh"
+#include "device_buffer.cuh"
 #include "template_generator.hh"
 
 namespace cuda_tools
@@ -185,6 +186,12 @@ host_shared_ptr<T> host_shared_ptr<T>::copy()
     }
 
     return cp;
+}
+
+template <typename T>
+device_buffer<T> host_shared_ptr<T>::to_device()
+{
+    return device_buffer(*this);
 }
 
 } // namespace cuda_tools
