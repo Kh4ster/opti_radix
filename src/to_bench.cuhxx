@@ -10,25 +10,31 @@
 
 // TILE_WIDTH == BLOCK_WIDTH == 256
 // BITS_PER_PASS = 256
-// 1 thread per element
-// Boundary not handled
-template <typename T, int TILE_WIDTH, int TILE_HEIGHT>
+// TODO handle number of element per thread / nb bits per pass
+// TODO handle boundary / none % of size
+// TODO bench different load/store strategy
+template <typename T, int TILE_WIDTH, int TILE_HEIGHT, int ITEMS_PER_THREAD = 1>
 __global__ void block_histo_basic(cuda_tools::device_buffer<T> in,
                                   cuda_tools::device_buffer<T> out,
                                   cuda_tools::device_buffer<int> digit_count)
 {
     const int tid = threadIdx.x;
-    const int gid = tid + blockIdx.x * blockDim.x;
 
-    typedef cub::BlockHistogram<T, TILE_WIDTH, 1, 256> BlockHistogram;
-    // Allocate shared memory for BlockHistogram
-    __shared__ typename BlockHistogram::TempStorage temp_storage;
-    // Allocate shared memory for block-wide histogram bin counts
+    typedef cub::BlockHistogram<T, TILE_WIDTH, ITEMS_PER_THREAD, 256>
+        BlockHistogram;
+    typedef cub::BlockLoad<T, TILE_WIDTH, 1, cub::BLOCK_LOAD_TRANSPOSE>
+        BlockLoad;
+    __shared__ union
+    {
+        typename BlockLoad::TempStorage load;
+        typename BlockHistogram::TempStorage hist;
+    } temp_storage;
+
+    T thread_data[ITEMS_PER_THREAD];
+    BlockLoad(temp_storage.load).Load(in, thread_data);
+
     __shared__ unsigned int smem_histogram[256];
-    // Obtain input samples per thread
-    T hist[1] = {in[gid]};
-    // Compute the block-wide histogram
-    BlockHistogram(temp_storage).Histogram(hist, smem_histogram);
+    BlockHistogram(temp_storage.hist).Histogram(thread_data, smem_histogram);
 
     // printf("T %d data %d hist %d\n", tid, in[gid], smem_histogram[tid]);
     digit_count[blockIdx.x + tid * gridDim.x] = smem_histogram[tid];
