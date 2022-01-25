@@ -18,7 +18,7 @@ set(CMAKE_CUDA_SEPARABLE_COMPILATION ON)
 set(CMAKE_CUDA_FLAGS "--extended-lambda")
 #set(CMAKE_CUDA_FLAGS "--expt-relaxed-constexpr --ptxas-options=-v --generate-line-info")
 
-add_library(async_memcpy
+add_library(radix
   src/cuda_tools/host_shared_ptr.cu
   src/cuda_tools/device_buffer.cu)
 
@@ -30,7 +30,7 @@ find_package(benchmark REQUIRED)
 add_executable(Bench bench/main.cu)
 set_property(TARGET Bench PROPERTY CXX_STANDARD 20)
 
-target_link_libraries(Bench async_memcpy GTest::GTest benchmark::benchmark TBB::tbb)
+target_link_libraries(Bench radix GTest::GTest benchmark::benchmark TBB::tbb)
 
 #add_test(NAME UTMaxtree COMMAND UTMaxtree)
 
