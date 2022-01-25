@@ -1,5 +1,7 @@
 [requires]
 benchmark/[>=1.5]
 gtest/1.10.0
+tbb/2020.3
+
 [generators]
 cmake

@@ -5,10 +5,12 @@ include(FindCUDAToolkit)
 
 enable_language(CUDA)
 
+find_package(TBB REQUIRED)
+
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup(TARGETS)
 
-add_compile_options(-W -Wall)
+add_compile_options(-W -Wall -Wextra)
 set(CMAKE_CUDA_STANDARD 17)
 set(CMAKE_CUDA_STANDARD_REQUIRED TRUE)
 set(CMAKE_CUDA_ARCHITECTURES 75)
@@ -28,7 +30,7 @@ find_package(benchmark REQUIRED)
 add_executable(Bench bench/main.cu)
 set_property(TARGET Bench PROPERTY CXX_STANDARD 20)
 
-target_link_libraries(Bench async_memcpy GTest::GTest benchmark::benchmark)
+target_link_libraries(Bench async_memcpy GTest::GTest benchmark::benchmark TBB::tbb)
 
 #add_test(NAME UTMaxtree COMMAND UTMaxtree)
 
